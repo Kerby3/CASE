@@ -1,0 +1,26 @@
+{
+  "name": "123",
+  "version": "1.0.0",
+  "description": "123",
+  "main": "123",
+  "scripts": {
+    "test": "123"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Kerby3/CASE.git"
+  },
+  "keywords": [
+    "123"
+  ],
+  "author": "123",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kerby3/CASE/issues"
+  },
+  "homepage": "https://github.com/Kerby3/CASE#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1"
+  }
+}
