@@ -2,6 +2,11 @@ let express = require('express');
 const bodyParser = require('body-parser');
 let app = express();
 const urlencodedParser = bodyParser.urlencoded({extended: false});
+let http = require('http');
+let fs = require('fs');
+const mysql = require("mysql2");
+
+const PORT = 3306;
 
 let artists = [
 {
@@ -18,23 +23,59 @@ let artists = [
 }
 ];
 
-let login123 = '<h1>Регистрация</h1>'
-
 app.get('/', function (req, res) {
-	res.setHeader("Content-Type", "text/html");
-    res.write("<!DOCTYPE html>");
-    res.write("<html>");
-    res.write("<head>");
-    res.write("<title>Hello Node.js</title>");
-    res.write("<meta charset=\"utf-8\" />");
-    res.write("</head>");
-    res.write("<body><form action=\"/register\" method=\"post\"><input name = \"click\"class=\"login\" type=\"submit\" value=\"Войти\\Регистрация\"></form></body>");
-    res.write("</html>");
-    res.end();
+	fs.readFile('./index.html', function (err, html) {
+		res.setHeader("Content-Type", "text/html");
+		res.write(html);
+  		res.end();
+	});
 })
 
 app.post('/register', urlencodedParser, function (req, res) {
-	res.send(login123);
+	fs.readFile('./registrationForm.html', function (err, html) {
+		res.setHeader("Content-Type", "text/html");
+		res.write(html);
+		res.end();
+	});
+})
+
+app.post('/', urlencodedParser, function (req, res) {
+	fs.readFile('./index.html', function (err, html) {
+		res.setHeader("Content-Type", "text/html");
+		res.write(html);
+		res.end();
+		let client = [req.body.name, req.body.surname]
+		const connection = mysql.createConnection({
+		  host: "localhost",
+		  user: "root",
+		  database: "clients",
+		  password: "qwerty",
+		  port: 3307
+		});
+		// тестирование подключения
+		  connection.connect(function(err){
+		    if (err) {
+		      return console.error("Ошибка: " + err.message);
+		    }
+		    else{
+		      console.log("Подключение к серверу MySQL успешно установлено");
+		    }
+		 });
+		  connection.execute("INSERT INTO clients (FIRST_NAME, SURNAME) VALUE (?,?)",client, function (err, results) {
+		  	if (err) {
+		  		console.log(err);
+		  	} else {
+		  		console.log('Клиент добавлен!');
+		  	}
+		  });
+		 // закрытие подключения
+		 connection.end(function(err) {
+		  if (err) {
+		    return console.log("Ошибка: " + err.message);
+		  }
+		  console.log("Подключение закрыто");
+		});
+	});
 })
 
 app.get('/artists', function (req, res) {
@@ -49,6 +90,6 @@ app.get('/artists/:id', function (req, res) {
 	res.send(artist);
 })
 
-app.listen(3000, function () {
+app.listen(PORT, function () {
 	console.log('API app started');
 })
