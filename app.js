@@ -5,6 +5,7 @@ const urlencodedParser = bodyParser.urlencoded({extended: false});//подклю
 let http = require('http');//подключение компонентов
 let fs = require('fs');//подключение компонентов
 const mysql = require("mysql2");//подключение компонентов
+const passwordHash = require( 'password-hash' );
 
 const PORT = 3306;// выбор порта для сервера
 
@@ -55,7 +56,9 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 		res.end();
 		console.log(req.body);
 		if (req.body.typeClient === 'login') { //проверка на тип пользователя логинится он или регистрируется
-			let client = [req.body.name, req.body.surname, req.body.password] //парсинг данных из форм
+			let hashedPassword = passwordHash.generate(req.body.password);
+			console.log(hashedPassword);
+			let client = [req.body.name, req.body.surname];
 			const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
 			  user: "root",//пользователь
@@ -72,14 +75,22 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			      console.log("Подключение к серверу MySQL успешно установлено");//вывод успешного подключения к БД
 			    }
 			 });
-			  connection.execute('SELECT * FROM clients WHERE FIRST_NAME=(?) AND SURNAME=(?) AND PASSWORD_FIELD=(?)', client, function (err, results) { //выполнение SQL запроса на добавление клиента при регистрации
+
+			  connection.execute('SELECT * FROM clients WHERE FIRST_NAME=(?) AND SURNAME=(?)', client, function (err, results) { //выполнение SQL запроса на добавление клиента при регистрации
 			  	if (err) {//проверка на ошибку
 			  		console.log(err);//вывод ошибки
 			  	} else {
 			  		if (results.length === 0) {
-			  			console.log('Неверные Имя, Фамилия или Пароль.');
+			  			console.log('Неверные Имя, Фамилия или Пароль.1');
 			  		} else {
-			  			console.log('Добро пожаловать!');
+			  			for (let i = 0; i < results.length; i += 1) {
+			  				if (passwordHash.verify(req.body.password, results[i].PASSWORD_FIELD) === true) {
+			  					console.log(`Welcome! ${client[0]} ${client[1]}`);
+			  					break;
+			  				} else {
+			  					console.log('Неверные Имя, Фамилия или Пароль.2');
+			  				}
+			  			}
 			  		}
 			  	}
 			  });
@@ -91,7 +102,9 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  console.log("Подключение закрыто");
 			});
 		} else if (req.body.typeClient === 'register') {
-			let client = [req.body.name, req.body.surname, req.body.password] //парсинг данных из форм
+			let hashedPassword = passwordHash.generate(req.body.password);
+			console.log(hashedPassword.length);
+			let client = [req.body.name, req.body.surname, hashedPassword] //парсинг данных из форм
 			const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
 			  user: "root",//пользователь
@@ -112,6 +125,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  	if (err) {//проверка на ошибку
 			  		console.log(err);//вывод ошибки
 			  	} else {
+
 			  		console.log('Клиент добавлен!');//вывод успешного запроса
 			  	}
 			  });
