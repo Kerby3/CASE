@@ -6,6 +6,8 @@ let http = require('http');//подключение компонентов
 let fs = require('fs');//подключение компонентов
 const mysql = require("mysql2");//подключение компонентов
 const passwordHash = require( 'password-hash' );
+app.set('view engine', 'hbs');
+app.set('views', 'views');
 
 const PORT = 3306;// выбор порта для сервера
 
@@ -23,6 +25,12 @@ let artists = [
 	name: 'TOP'
 }
 ];
+
+app.use('/qwa', (req, res) => {
+	res.render('indexRegistrationSuccess.hbs', {
+		successClient: 'aaa'
+	});
+}); 
 
 app.get('/', function (req, res) { // если зашел на главную страницу по ссылке
 	fs.readFile('./index.html', function (err, html) {
@@ -50,14 +58,13 @@ app.get('/registr', urlencodedParser, function (req, res) { //если пере�
 })
 
 app.post('/', urlencodedParser, function (req, res) { //если нажал на одну из кнопок форм, то кидает на главную
-	fs.readFile('./index.html', function (err, html) {
+	/*fs.readFile('./index.html', function (err, html) {
 		res.setHeader("Content-Type", "text/html");
 		res.write(html);
-		res.end();
+		res.end();*/
 		console.log(req.body);
 		if (req.body.typeClient === 'login') { //проверка на тип пользователя логинится он или регистрируется
 			let hashedPassword = passwordHash.generate(req.body.password);
-			console.log(hashedPassword);
 			let client = [req.body.name, req.body.surname];
 			const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
@@ -76,19 +83,22 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			    }
 			 });
 
-			  connection.execute('SELECT * FROM clients WHERE FIRST_NAME=(?) AND SURNAME=(?)', client, function (err, results) { //выполнение SQL запроса на добавление клиента при регистрации
+			  connection.execute('SELECT * FROM clients WHERE FIRST_NAME=(?) AND SURNAME=(?)', client, function (err, results) { //выполнение SQL запроса на поиск клиента
 			  	if (err) {//проверка на ошибку
 			  		console.log(err);//вывод ошибки
 			  	} else {
 			  		if (results.length === 0) {
-			  			console.log('Неверные Имя, Фамилия или Пароль.1');
+			  			console.log('Ошибка');
 			  		} else {
 			  			for (let i = 0; i < results.length; i += 1) {
 			  				if (passwordHash.verify(req.body.password, results[i].PASSWORD_FIELD) === true) {
 			  					console.log(`Welcome! ${client[0]} ${client[1]}`);
+									res.render('indexRegistrationSuccess.hbs', {
+										successClient: `${client[0]} ${client[1]}`
+									});
 			  					break;
 			  				} else {
-			  					console.log('Неверные Имя, Фамилия или Пароль.2');
+			  					continue;
 			  				}
 			  			}
 			  		}
@@ -126,7 +136,9 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  		console.log(err);//вывод ошибки
 			  	} else {
 
-			  		console.log('Клиент добавлен!');//вывод успешного запроса
+			  		res.render('indexRegistrationSuccess.hbs', {
+						successClient: `${client[0]} ${client[1]}`
+					});
 			  	}
 			  });
 			 // закрытие подключения
@@ -137,7 +149,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  console.log("Подключение закрыто");
 			});
 		}
-	});
+	
 })
 
 app.get('/artists', function (req, res) {
