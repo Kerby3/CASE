@@ -8,6 +8,9 @@ const mysql = require("mysql2");//подключение компонентов
 const passwordHash = require( 'password-hash' );
 app.set('view engine', 'hbs');
 app.set('views', 'views');
+app.use('public', express.static('public'));
+app.use(express.static(__dirname + '/public'));
+
 
 const PORT = 3306;// выбор порта для сервера
 
@@ -62,7 +65,6 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 		res.setHeader("Content-Type", "text/html");
 		res.write(html);
 		res.end();*/
-		console.log(req.body);
 		if (req.body.typeClient === 'login') { //проверка на тип пользователя логинится он или регистрируется
 			let hashedPassword = passwordHash.generate(req.body.password);
 			let client = [req.body.name, req.body.surname];
@@ -88,7 +90,11 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  		console.log(err);//вывод ошибки
 			  	} else {
 			  		if (results.length === 0) {
-			  			console.log('Ошибка');
+			  			fs.readFile('./loginFormLose.html', (err, html) => {
+			  				res.setHeader("Content-Type", "text/html");
+							res.write(html);
+							res.end();
+			  			})
 			  		} else {
 			  			for (let i = 0; i < results.length; i += 1) {
 			  				if (passwordHash.verify(req.body.password, results[i].PASSWORD_FIELD) === true) {
@@ -98,6 +104,13 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 									});
 			  					break;
 			  				} else {
+			  					if (i === results.length - 1) {
+			  						fs.readFile('./loginFormLose.html', (err, html) => {
+						  				res.setHeader("Content-Type", "text/html");
+										res.write(html);
+										res.end();
+						  			})
+			  					}
 			  					continue;
 			  				}
 			  			}
@@ -135,10 +148,13 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  	if (err) {//проверка на ошибку
 			  		console.log(err);//вывод ошибки
 			  	} else {
-
+			  		/*app.get('*', (req, res) => {
+						res.sendFile('C:/Users/popov/Desktop/Dev/проекты/CASE/public/postData.js')
+					})*/
 			  		res.render('indexRegistrationSuccess.hbs', {
 						successClient: `${client[0]} ${client[1]}`
 					});
+
 			  	}
 			  });
 			 // закрытие подключения
@@ -148,13 +164,33 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  }
 			  console.log("Подключение закрыто");
 			});
-		}
+		} 
 	
 })
 
 app.get('/artists', function (req, res) {
 	res.send(artists);
 })
+
+app.post('/monitoring', urlencodedParser, (req, res) => {
+	res.render('monitor.hbs', {
+		avgSalary: `${req.body.avgSalary}`
+	})
+	console.log(req.body);
+})
+
+/*app.use('/enteringData', (req, res) => {
+	res.render('enterData.hbs', {
+		
+	});
+});
+
+app.get('/regSuccess', (req, res) => {
+	res.render('indexRegistrationSuccess.hbs', {
+
+	});
+
+})*/
 
 app.get('/artists/:id', function (req, res) {
 	console.log(req.params);

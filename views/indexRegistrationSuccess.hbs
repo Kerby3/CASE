@@ -8,7 +8,15 @@
 	<form action="loginRegistration" method="post">
 		<input name = "click" class="login" type="submit" value="Войти\Регистрация">
 	</form>
-	<p>Welcome123, {{successClient}}!</p>
-	<!--<script type="text/javascript" src="clientJS/script.js"></script>-->
+	<p class="client">Welcome, {{successClient}}!</p>
+	<p href="enteringData">Вы можете внести свои данные в форме ниже</p>
+	<form action="/monitoring" method="post">
+		<input name = "avgSalary" class="avgSalary"> Средняя зарплата<br>
+		<input type="hidden" name="typeClient" value="enterData">
+		<input type="hidden" class="nameClient">
+		<input type="hidden" class= surnameClient>
+		<input type="submit" class="monitorButton">
+	</form>
+	<script src="postData.js"></script>
 </body>
 </html>

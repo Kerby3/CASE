@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<!--<form action="/regSuccess">-->
+		<input class="averageSalary" type="text"> Средняя зарплата
+		<!--<input type="hidden" name="userAuthorized" value="true">-->
+		<input class="postDataButton" type="submit" onclick="javascript:history.go(-1)"> 
+	<!--</form>-->
+	<script>
+		let postDataBtn = document.querySelector('.postDataButton');
+		let avgSalaryField = document.querySelector('.averageSalary');
+
+		postDataBtn.addEventListener('click', () => {
+				 
+		let request = new XMLHttpRequest();
+		reqReadyStateChange = () => {
+		    if (request.readyState == 4) {
+		        var status = request.status;
+		        if (status == 200) {
+		            avgSalaryField.innerHTML=request.responseText;
+		        }
+		    }
+		}
+		// строка с параметрами для отправки
+		var body = avgSalaryField.value;
+		request.open("GET", "http://localhost:3306/"+body);
+		request.onreadystatechange = reqReadyStateChange;
+		request.send();
+		});
+	</script>
+</body>
+</html>
