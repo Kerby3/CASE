@@ -36,11 +36,51 @@ app.use('/qwa', (req, res) => {
 }); 
 
 app.get('/', function (req, res) { // если зашел на главную страницу по ссылке
-	fs.readFile('./index.html', function (err, html) {
-		res.setHeader("Content-Type", "text/html");
-		res.write(html);
-  		res.end();
-	});
+	let sumOfSalary = 0;
+	let averageSalary = 0;
+	const connection = mysql.createConnection({//соединение с БД
+			  host: "localhost", //хост
+			  user: "root",//пользователь
+			  database: "clients",//название БД
+			  password: "qwerty",//пароль к БД
+			  port: 3307//порт к БД
+			});
+			// тестирование подключения
+			  connection.connect(function(err){//соединение с БД
+			    if (err) {//проверка на ошибку
+			      return console.error("Ошибка: " + err.message);//вывод ошибки
+			    }
+			    else{
+			      console.log("Подключение к серверу MySQL успешно установлено");//вывод успешного подключения к БД
+			    }
+			 });
+
+			  connection.execute('SELECT * FROM clients', function (err, results) { //выполнение SQL запроса на поиск клиента
+			  	if (err) {//проверка на ошибку
+			  		console.log(err);//вывод ошибки
+			  	} else {
+			  		if (results.length === 1) {
+			  			averageSalary = results[0].SALARY;
+			  		} else {
+				  		for (let i = 0; i < results.length; i += 1) {
+				  			sumOfSalary += parseInt(results[i].SALARY);
+				  		}
+				  		
+			  		}
+			  	}
+			  	averageSalary = sumOfSalary / results.length;
+			  	res.render('index.hbs', {
+					avgSalary : averageSalary
+				});
+			})
+			  	connection.end(function(err) {
+				if (err) {
+				  return console.log("Ошибка: " + err.message);
+				}
+				console.log("Подключение закрыто");
+			});
+	console.log(averageSalary);
+	
 })
 
 app.post('/loginRegistration', urlencodedParser, function (req, res) { //если нажал кнопку "Войти\Регистрация", то откроется файл loginForm.html
@@ -89,6 +129,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  	if (err) {//проверка на ошибку
 			  		console.log(err);//вывод ошибки
 			  	} else {
+			  		console.log(results);
 			  		if (results.length === 0) {
 			  			fs.readFile('./loginFormLose.html', (err, html) => {
 			  				res.setHeader("Content-Type", "text/html");
@@ -127,7 +168,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 		} else if (req.body.typeClient === 'register') {
 			let hashedPassword = passwordHash.generate(req.body.password);
 			console.log(hashedPassword.length);
-			let client = [req.body.name, req.body.surname, hashedPassword] //парсинг данных из форм
+			let client = [req.body.name, req.body.surname, hashedPassword, req.body.salary] //парсинг данных из форм
 			const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
 			  user: "root",//пользователь
@@ -144,7 +185,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			      console.log("Подключение к серверу MySQL успешно установлено");//вывод успешного подключения к БД
 			    }
 			 });
-			  connection.execute("INSERT INTO clients (FIRST_NAME, SURNAME, PASSWORD_FIELD) VALUES (?, ?, ?)",client, function (err, results) { //выполнение SQL запроса на добавление клиента при регистрации
+			  connection.execute("INSERT INTO clients (FIRST_NAME, SURNAME, PASSWORD_FIELD, SALARY) VALUES (?, ?, ?, ?)",client, function (err, results) { //выполнение SQL запроса на добавление клиента при регистрации
 			  	if (err) {//проверка на ошибку
 			  		console.log(err);//вывод ошибки
 			  	} else {
