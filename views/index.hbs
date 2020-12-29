@@ -9,5 +9,10 @@
 		<input name = "click" class="login" type="submit" value="Войти\Регистрация">
 	</form>
 	<p>Средняя зарплата: {{avgSalary}}</p>
+	<p>Вы можете посмотреть среднюю зарплату в определенной организации, выбрав ее ниже</p>
+	<select name="institutionSelector" class="institutionSelect">
+		{{{options}}}
+	</select>
+	<script src="postInstitution.js"></script>
 </body>
 </html>
