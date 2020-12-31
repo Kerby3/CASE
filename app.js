@@ -117,7 +117,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 		res.end();*/
 		let sumOfSalary = 0;
 		let averageSalary = 0;
-		console.log(req.body);
+		//console.log(req.body);
 		if (req.body.typeClient === 'login') { //проверка на тип пользователя логинится он или регистрируется
 			let hashedPassword = passwordHash.generate(req.body.password);
 			let client = [req.body.name, req.body.surname];
@@ -247,7 +247,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			let options = [];
 			let institutions = [];
 			let hashedPassword = passwordHash.generate(req.body.password);
-			console.log(hashedPassword.length);
+			//console.log(hashedPassword.length);
 			let client = [req.body.name, req.body.surname, hashedPassword, req.body.salary, req.body.institution] //парсинг данных из форм
 			const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
@@ -332,6 +332,9 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 		} else if (req.body.typeClient !== 'register' && req.body.typeClient !== 'login') {
 			let institutions = [];
 			let options = '';
+			let sumOfSalaryInstitution = 0;
+			let sumOfSalaryInstitutions = [];
+			let averageSalaryInstitution = [];
 			const connection = mysql.createConnection({//соединение с БД
 					  host: "localhost", //хост
 					  user: "root",//пользователь
@@ -353,8 +356,10 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 					  	if (err) {//проверка на ошибку
 					  		console.log(err);//вывод ошибки
 					  	} else {
+					  		//console.log(results);
 					  		if (results.length === 1) {
 					  			sumOfSalary = results[0].SALARY;
+					  			averageSalaryInstitution.push(sumOfSalary);
 					  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
 					  		} else {
 					  			for (let j = 0; j < results.length; j += 1) {
@@ -364,16 +369,16 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 								let uniqueInstitutions = [...new Set(institutions)];
 						  		for (let i = 0; i < uniqueInstitutions.length; i += 1) {
 						  			options += `<option value="${uniqueInstitutions[i]}">${uniqueInstitutions[i]}</option>\n`;
+						  			//console.log(uniqueInstitutions[i]);
+
+						  			/*
+									});*/
+
 						  		}
 						  		
 					  		}
 					  	}
 					  	//console.log(options);
-					  	averageSalary = sumOfSalary / results.length;
-					  	res.render('index.hbs', {
-							avgSalary : averageSalary,
-							options: options
-						});
 						//console.log(req.body);
 					})
 					  	connection.end(function(err) {
@@ -386,16 +391,65 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 	
 })
 
+app.post('/avgSalaryInstitution',urlencodedParser, (req, res) => {
+	console.log(req.body.institutionSelector);
+
+	const connection = mysql.createConnection({//соединение с БД
+		host: "localhost", //хост
+		user: "root",//пользователь
+		database: "clients",//название БД
+		password: "qwerty",//пароль к БД
+		port: 3307//порт к БД
+	});
+	// тестирование подключения
+	connection.connect(function(err){//соединение с БД
+	    if (err) {//проверка на ошибку
+	      return console.error("Ошибка: " + err.message);//вывод ошибки
+	    } else{
+		    console.log("Подключение к серверу MySQL успешно установлено");//вывод успешного подключения к БД
+		}
+	});
+	//console.log('aaaa');
+	connection.config.namedPlaceholders = true;
+	connection.execute(`SELECT * FROM clients WHERE INSTITUTION='${req.body.institutionSelector}'`, function (err, results) { //выполнение SQL запроса на поиск клиента
+		if (err) {//проверка на ошибку
+			console.log(err);//вывод ошибки
+		} else {
+			let averageSalaryInstitution = 0;
+			let sumOfSalaryInstitution = 0;
+			if (results.length === 1) {
+				sumOfSalaryInstitution = results[0].SALARY;
+			} else {
+				for (let i = 0; i < results.length; i++) {
+					sumOfSalaryInstitution += results[i].SALARY; 
+				}
+			}
+			averageSalaryInstitution = sumOfSalaryInstitution / results.length;
+			res.render('avgSalaryInstitution.hbs', {
+				institution: req.body.institutionSelector,
+				avgSalaryInsitution: averageSalaryInstitution
+			})
+		}
+	});
+	connection.end(function(err) {
+		if (err) {
+		  return console.log("Ошибка: " + err.message);
+		}
+	console.log("Подключение закрыто");
+
+	});
+});
+
 app.get('/artists', function (req, res) {
 	res.send(artists);
 })
 
-app.post('/monitoring', urlencodedParser, (req, res) => {
+/*app.post('/monitoring', urlencodedParser, (req, res) => {
 	res.render('monitor.hbs', {
 		avgSalary: `${req.body.avgSalary}`
 	})
 	console.log(req.body);
-})
+})*/
 
 /*app.use('/enteringData', (req, res) => {
 	res.render('enterData.hbs', {

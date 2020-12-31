@@ -1,6 +1,8 @@
+let institutionBtn = document.querySelector('.avgSalaryInstitutionButton');
 let institutionSelect = document.querySelector('.institutionSelect');
 
-institutionSelect.addEventListener('change', () => {
+institutionBtn.addEventListener('click', () => {
+	console.log('click')
 	let reqReadyStateChange = () => {
 	    if (request.readyState == 4) {
 	        let status = request.status;
@@ -12,7 +14,7 @@ institutionSelect.addEventListener('change', () => {
 	let body = `institution=${institutionSelect.options[institutionSelect.selectedIndex].value}`;
 	console.log(body);
 	let request = new XMLHttpRequest();
-	request.open("POST", '/');
+	request.open("POST", 'avgSalaryInstitution');
 	request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 	request.onreadystatechange = reqReadyStateChange;
 	request.send(body);
@@ -22,7 +24,7 @@ institutionSelect.addEventListener('change', () => {
 	console.log('OK');
 })*/
 
-window.addEventListener('load', () => {
+/*window.addEventListener('load', () => {
 	let reqReadyStateChange = () => {
 	    if (request.readyState == 4) {
 	        let status = request.status;
@@ -38,4 +40,4 @@ window.addEventListener('load', () => {
 	request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 	request.onreadystatechange = reqReadyStateChange;
 	request.send(body);
-});
+});*/

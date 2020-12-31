@@ -11,9 +11,12 @@
 	<p class="client">Welcome, {{successClient}}!</p>
 	<p>Средняя зарплата: {{avgSalary}}</p>
 	<p>Вы можете посмотреть среднюю зарплату в определенной организации, выбрав ее ниже</p>
-	<select name="institutionSelector" class="institutionSelect">
-		{{{options}}}
-	</select>
-	<script src="postInstitution.js"></script>
+	<form action="avgSalaryInstitution" method="post">
+		<select name="institutionSelector" class="institutionSelect">
+			{{{options}}}
+		</select>
+		<input type="submit" value="Посмотреть" class="avgSalaryInstitutionButton">
+	</form>
+	<!--<script src="postInstitution.js"></script>-->
 </body>
 </html>
