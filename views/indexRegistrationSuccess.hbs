@@ -9,14 +9,14 @@
 		<input name = "click" class="login" type="submit" value="Войти\Регистрация">
 	</form>
 	<p class="client">Welcome, {{successClient}}!</p>
-	<p>Средняя зарплата: {{avgSalary}}</p>
+	<p>Средняя зарплата с учетом административно-управленческого персонала: {{avgSalaryWithAdmin}}</p>
+	<p>Средняя зарплата без учета административно-управленческого персонала: {{avgSalaryWithoutAdmin}}</p>
 	<p>Вы можете посмотреть среднюю зарплату в определенной организации, выбрав ее ниже</p>
-	<form action="avgSalaryInstitution" method="post">
+	<form action="/avgSalaryInstitution" method="post">
 		<select name="institutionSelector" class="institutionSelect">
 			{{{options}}}
 		</select>
 		<input type="submit" value="Посмотреть" class="avgSalaryInstitutionButton">
 	</form>
-	<!--<script src="postInstitution.js"></script>-->
 </body>
 </html>

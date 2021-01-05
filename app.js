@@ -36,9 +36,12 @@ app.use('/qwa', (req, res) => {
 }); 
 
 app.get('/', function (req, res) { // если зашел на главную страницу по ссылке
-	let sumOfSalary = 0;
-	let averageSalary = 0;
+	let sumOfSalaryWithAdmin = 0;
+	let averageSalaryWithAdmin = 0;
+	let sumOfSalaryWithoutAdmin = 0;
+	let averageSalaryWithoutAdmin = 0;
 	let options = '';
+	let countWithoutAdmin = 0;
 	let institutions = [];
 	let uniqueInstitutions = [];
 	const connection = mysql.createConnection({//соединение с БД
@@ -63,12 +66,20 @@ app.get('/', function (req, res) { // если зашел на главную с
 			  		console.log(err);//вывод ошибки
 			  	} else {
 			  		if (results.length === 1) {
-			  			sumOfSalary = results[0].SALARY;
 			  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
+			  			sumOfSalaryWithAdmin = results[0].SALARY;
+			  			if (results[0].isAdmin === '0') {
+			  				sumOfSalaryWithoutAdmin = results[0].SALARY;
+			  				countWithoutAdmin = 1;
+			  			}
 			  		} else {
 				  		for (let i = 0; i < results.length; i += 1) {
-				  			sumOfSalary += parseInt(results[i].SALARY);
 				  			institutions.push(results[i].INSTITUTION);
+				  			sumOfSalaryWithAdmin += parseInt(results[i].SALARY);
+				  			if (results[i].isAdmin === '0') {
+				  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
+				  				countWithoutAdmin += 1;
+				  			}
 				  		}
 				  		uniqueInstitutions = [...new Set(institutions)];
 				  		for (let j = 0; j < uniqueInstitutions.length; j += 1) {
@@ -77,9 +88,17 @@ app.get('/', function (req, res) { // если зашел на главную с
 			  		}
 			  	}
 			  	//console.log(options);
-			  	averageSalary = sumOfSalary / results.length;
+			  	averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
+			  	averageSalaryWithoutAdmin = sumOfSalaryWithoutAdmin / countWithoutAdmin;
+			  	if (sumOfSalaryWithoutAdmin === 0 || sumOfSalaryWithoutAdmin === NaN) {
+			  		averageSalaryWithoutAdmin = 'Нет персонала';
+			  	}
+			  	if (sumOfSalaryWithAdmin === 0 || sumOfSalaryWithAdmin === NaN) {
+			  		averageSalaryWithAdmin = 'Нет персонала';
+			  	}
 			  	res.render('index.hbs', {
-					avgSalary : averageSalary,
+					avgSalaryWithAdmin : averageSalaryWithAdmin,
+					avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
 					options: options
 				});
 			})
@@ -89,7 +108,7 @@ app.get('/', function (req, res) { // если зашел на главную с
 				}
 				console.log("Подключение закрыто");
 			});
-	console.log(averageSalary);
+	console.log(averageSalaryWithAdmin);
 	
 })
 
@@ -111,12 +130,11 @@ app.get('/registr', urlencodedParser, function (req, res) { //если пере�
 })
 
 app.post('/', urlencodedParser, function (req, res) { //если нажал на одну из кнопок форм, то кидает на главную
-	/*fs.readFile('./index.html', function (err, html) {
-		res.setHeader("Content-Type", "text/html");
-		res.write(html);
-		res.end();*/
-		let sumOfSalary = 0;
-		let averageSalary = 0;
+	let sumOfSalaryWithAdmin = 0;
+	let averageSalaryWithAdmin = 0;
+	let sumOfSalaryWithoutAdmin = 0;
+	let averageSalaryWithoutAdmin = 0;
+	let countWithoutAdmin = 0;
 		//console.log(req.body);
 		if (req.body.typeClient === 'login') { //проверка на тип пользователя логинится он или регистрируется
 			let hashedPassword = passwordHash.generate(req.body.password);
@@ -150,11 +168,6 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  	} else {
 			  		//console.log(results);
 			  		if (results.length === 0) {
-			  			/*fs.readFile('./loginFormLose.html', (err, html) => {
-			  				res.setHeader("Content-Type", "text/html");
-							res.write(html);
-							res.end();
-			  			})*/
 
 			  			res.render('loginFormLose.hbs', {
 
@@ -188,23 +201,39 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 							  	} else {
 							  		//console.log(results);
 							  		if (results.length === 1) {
-							  			sumOfSalary = results[0].SALARY;
 							  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
+							  			sumOfSalaryWithAdmin = results[0].SALARY;
+							  			if (results[0].isAdmin === '0') {
+							  				sumOfSalaryWithoutAdmin = results[0].SALARY;
+							  				countWithoutAdmin = 1;
+							  			}
 							  		} else {
 								  		for (let i = 0; i < results.length; i += 1) {
-								  			sumOfSalary += parseInt(results[i].SALARY);
 								  			institutions.push(results[i].INSTITUTION);
+								  			sumOfSalaryWithAdmin += parseInt(results[i].SALARY);
+								  			if (results[i].isAdmin === '0') {
+								  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
+								  				countWithoutAdmin += 1;
+								  			}
 								  		}
-								  		let uniqueInstitutions = [...new Set(institutions)];
+								  		uniqueInstitutions = [...new Set(institutions)];
 								  		for (let j = 0; j < uniqueInstitutions.length; j += 1) {
-								  			options += `<option value="${uniqueInstitutions[j]}">${uniqueInstitutions[j]}</option>\n`;
+								  			options += `<option value=${uniqueInstitutions[j]}>${uniqueInstitutions[j]}</option>\n`
 								  		}
 							  		}
 							  	}
-							  	averageSalary = sumOfSalary / results.length;
+							  	averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
+							  	averageSalaryWithoutAdmin = sumOfSalaryWithoutAdmin / countWithoutAdmin;
+							  	if (sumOfSalaryWithoutAdmin === 0 || sumOfSalaryWithoutAdmin === NaN) {
+							  		averageSalaryWithoutAdmin = 'Нет персонала';
+							  	}
+							  	if (sumOfSalaryWithAdmin === 0 || sumOfSalaryWithAdmin === NaN) {
+							  		averageSalaryWithAdmin = 'Нет персонала';
+							  	}
 							  	res.render('indexRegistrationSuccess.hbs', {
-									successClient: `${client[0]} ${client[1]}`,
-									avgSalary : averageSalary,
+							  		successClient: `${client[0]} ${client[1]}`,
+									avgSalaryWithAdmin : averageSalaryWithAdmin,
+									avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
 									options: options
 								});
 							})
@@ -219,11 +248,6 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  					break;
 			  				} else {
 			  					if (i === results.length - 1) {
-			  						/*fs.readFile('./loginFormLose.html', (err, html) => {
-						  				res.setHeader("Content-Type", "text/html");
-										res.write(html);
-										res.end();
-						  			})*/
 						  			res.render('loginFormLose.hbs', {
 			  				
 			  						})
@@ -242,13 +266,17 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  console.log("Подключение закрыто");
 			});
 		} else if (req.body.typeClient === 'register') {
-			let sumOfSalary = 0;
-			let averageSalary = 0;
+			console.log(req.body);
+			let sumOfSalaryWithAdmin = 0;
+			let averageSalaryWithAdmin = 0;
+			let sumOfSalaryWithoutAdmin = 0;
+			let averageSalaryWithoutAdmin = 0;
+			let countWithoutAdmin = 0;
 			let options = [];
 			let institutions = [];
 			let hashedPassword = passwordHash.generate(req.body.password);
 			//console.log(hashedPassword.length);
-			let client = [req.body.name, req.body.surname, hashedPassword, req.body.salary, req.body.institution] //парсинг данных из форм
+			let client = [req.body.name, req.body.surname, hashedPassword, req.body.salary, req.body.institution, req.body.isAdminCheckBox] //парсинг данных из форм
 			const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
 			  user: "root",//пользователь
@@ -265,7 +293,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			      console.log("Подключение к серверу MySQL успешно установлено");//вывод успешного подключения к БД
 			    }
 			 });
-			  connection.execute("INSERT INTO clients (FIRST_NAME, SURNAME, PASSWORD_FIELD, SALARY, INSTITUTION) VALUES (?, ?, ?, ?, ?)",client, function (err, results) { //выполнение SQL запроса на добавление клиента при регистрации
+			  connection.execute("INSERT INTO clients (FIRST_NAME, SURNAME, PASSWORD_FIELD, SALARY, INSTITUTION, isAdmin) VALUES (?, ?, ?, ?, ?, ?)",client, function (err, results) { //выполнение SQL запроса на добавление клиента при регистрации
 			  	if (err) {//проверка на ошибку
 			  		console.log(err);//вывод ошибки
 			  	} else {
@@ -293,23 +321,39 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 							  	} else {
 							  		//console.log(results);
 							  		if (results.length === 1) {
-							  			sumOfSalary = results[0].SALARY;
-							  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
+						  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
+						  			sumOfSalaryWithAdmin = results[0].SALARY;
+						  			if (results[0].isAdmin === '0') {
+						  				sumOfSalaryWithoutAdmin = results[0].SALARY;
+						  				countWithoutAdmin = 1;
+						  			}
 							  		} else {
 								  		for (let i = 0; i < results.length; i += 1) {
-								  			sumOfSalary += parseInt(results[i].SALARY);
 								  			institutions.push(results[i].INSTITUTION);
+								  			sumOfSalaryWithAdmin += parseInt(results[i].SALARY);
+								  			if (results[i].isAdmin === '0') {
+								  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
+								  				countWithoutAdmin += 1;
+								  			}
 								  		}
-								  		let uniqueInstitutions = [...new Set(institutions)];
+								  		uniqueInstitutions = [...new Set(institutions)];
 								  		for (let j = 0; j < uniqueInstitutions.length; j += 1) {
-								  			options += `<option value="${uniqueInstitutions[j]}">${uniqueInstitutions[j]}</option>\n`;
+								  			options += `<option value=${uniqueInstitutions[j]}>${uniqueInstitutions[j]}</option>\n`
 								  		}
 							  		}
 							  	}
-							  	averageSalary = sumOfSalary / results.length;
+							  	averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
+							  	averageSalaryWithoutAdmin = sumOfSalaryWithoutAdmin / countWithoutAdmin;
+							  	if (sumOfSalaryWithoutAdmin === 0 || sumOfSalaryWithoutAdmin === NaN) {
+							  		averageSalaryWithoutAdmin = 'Нет персонала';
+							  	}
+							  	if (sumOfSalaryWithAdmin === 0 || sumOfSalaryWithAdmin === NaN) {
+							  		averageSalaryWithAdmin = 'Нет персонала';
+							  	}
 							  	res.render('indexRegistrationSuccess.hbs', {
-									successClient: `${client[0]} ${client[1]}`,
-									avgSalary : averageSalary,
+							  		successClient: `${client[0]} ${client[1]}`,
+									avgSalaryWithAdmin : averageSalaryWithAdmin,
+									avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
 									options: options
 								});
 							})
@@ -332,6 +376,11 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 		} else if (req.body.typeClient !== 'register' && req.body.typeClient !== 'login') {
 			let institutions = [];
 			let options = '';
+			let sumOfSalaryWithAdmin = 0;
+			let averageSalaryWithAdmin = 0;
+			let sumOfSalaryWithoutAdmin = 0;
+			let averageSalaryWithoutAdmin = 0;
+			let countWithoutAdmin = 0;
 			let sumOfSalaryInstitution = 0;
 			let sumOfSalaryInstitutions = [];
 			let averageSalaryInstitution = [];
@@ -357,27 +406,36 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 					  		console.log(err);//вывод ошибки
 					  	} else {
 					  		//console.log(results);
-					  		if (results.length === 1) {
-					  			sumOfSalary = results[0].SALARY;
-					  			averageSalaryInstitution.push(sumOfSalary);
-					  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
-					  		} else {
-					  			for (let j = 0; j < results.length; j += 1) {
-									institutions.push(results[j].INSTITUTION);
-									sumOfSalary += parseInt(results[j].SALARY);
-								}
-								let uniqueInstitutions = [...new Set(institutions)];
-						  		for (let i = 0; i < uniqueInstitutions.length; i += 1) {
-						  			options += `<option value="${uniqueInstitutions[i]}">${uniqueInstitutions[i]}</option>\n`;
-						  			//console.log(uniqueInstitutions[i]);
 
-						  			/*
-									});*/
 
+
+						  		if (results.length === 1) {
+						  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
+						  			sumOfSalaryWithAdmin = results[0].SALARY;
+						  			if (results[0].isAdmin === '0') {
+						  				sumOfSalaryWithoutAdmin = results[0].SALARY;
+						  				countWithoutAdmin = 1;
+						  			}
+						  		} else {
+							  		for (let i = 0; i < results.length; i += 1) {
+							  			institutions.push(results[i].INSTITUTION);
+							  			sumOfSalaryWithAdmin += parseInt(results[i].SALARY);
+							  			if (results[i].isAdmin === '0') {
+							  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
+							  				countWithoutAdmin += 1;
+							  			}
+							  		}
+							  		uniqueInstitutions = [...new Set(institutions)];
+							  		for (let j = 0; j < uniqueInstitutions.length; j += 1) {
+							  			options += `<option value=${uniqueInstitutions[j]}>${uniqueInstitutions[j]}</option>\n`
+							  		}
 						  		}
-						  		
-					  		}
-					  	}
+						  	}
+
+
+
+
+					  	
 					  	//console.log(options);
 						//console.log(req.body);
 					})
@@ -391,8 +449,14 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 	
 })
 
-app.post('/avgSalaryInstitution',urlencodedParser, (req, res) => {
-	console.log(req.body.institutionSelector);
+/*app.use('/', urlencodedParser, function (req, res) {
+	res.render('index.hbs', {
+		//avgSalary : allSalary,
+		//options: options
+		});
+	});*/
+
+app.post('/avgSalaryInstitution', urlencodedParser, (req, res) => {
 
 	const connection = mysql.createConnection({//соединение с БД
 		host: "localhost", //хост
@@ -410,7 +474,7 @@ app.post('/avgSalaryInstitution',urlencodedParser, (req, res) => {
 		}
 	});
 	//console.log('aaaa');
-	connection.config.namedPlaceholders = true;
+	//connection.config.namedPlaceholders = true;
 	connection.execute(`SELECT * FROM clients WHERE INSTITUTION='${req.body.institutionSelector}'`, function (err, results) { //выполнение SQL запроса на поиск клиента
 		if (err) {//проверка на ошибку
 			console.log(err);//вывод ошибки
@@ -440,9 +504,15 @@ app.post('/avgSalaryInstitution',urlencodedParser, (req, res) => {
 	});
 });
 
+/*app.use('avgSalaryInstitution', (req, res) => {
+	res.render('avgSalaryInstitution.hbs', {
+
+	})
+})
+
 app.get('/artists', function (req, res) {
 	res.send(artists);
-})
+})*/
 
 /*app.post('/monitoring', urlencodedParser, (req, res) => {
 	res.render('monitor.hbs', {
