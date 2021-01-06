@@ -11,6 +11,7 @@
 	<p class="client">Welcome, {{successClient}}!</p>
 	<p>Средняя зарплата с учетом административно-управленческого персонала: {{avgSalaryWithAdmin}}</p>
 	<p>Средняя зарплата без учета административно-управленческого персонала: {{avgSalaryWithoutAdmin}}</p>
+	<p>Количество человек получающих зарплату согласно МРОТ: {{peopleWithMinimalWage}}, это {{percentPeopleWithMinimalWage}}% от всего количества человек, получающих зарплату</p>	
 	<p>Вы можете посмотреть среднюю зарплату в определенной организации, выбрав ее ниже</p>
 	<form action="/avgSalaryInstitution" method="post">
 		<select name="institutionSelector" class="institutionSelect">

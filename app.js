@@ -44,6 +44,10 @@ app.get('/', function (req, res) { // если зашел на главную с
 	let countWithoutAdmin = 0;
 	let institutions = [];
 	let uniqueInstitutions = [];
+	let minimalWage = 12792;
+	let peopleWithMinimalWage = 0;
+	let peopleWithoutMinimalWage = 0;
+	let percentPeopleWithMinimalWage = 0;
 	const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
 			  user: "root",//пользователь
@@ -72,6 +76,11 @@ app.get('/', function (req, res) { // если зашел на главную с
 			  				sumOfSalaryWithoutAdmin = results[0].SALARY;
 			  				countWithoutAdmin = 1;
 			  			}
+			  			if (results[0].SALARY >= minimalWage) {
+			  				peopleWithMinimalWage = 1;
+			  			} else {
+			  				peopleWithoutMinimalWage = 1;
+			  			}
 			  		} else {
 				  		for (let i = 0; i < results.length; i += 1) {
 				  			institutions.push(results[i].INSTITUTION);
@@ -79,6 +88,11 @@ app.get('/', function (req, res) { // если зашел на главную с
 				  			if (results[i].isAdmin === '0') {
 				  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
 				  				countWithoutAdmin += 1;
+				  			}
+				  			if (results[i].SALARY >= minimalWage) {
+				  				peopleWithMinimalWage += 1;
+				  			} else {
+				  				peopleWithoutMinimalWage += 1;
 				  			}
 				  		}
 				  		uniqueInstitutions = [...new Set(institutions)];
@@ -88,8 +102,15 @@ app.get('/', function (req, res) { // если зашел на главную с
 			  		}
 			  	}
 			  	//console.log(options);
+			  	percentPeopleWithMinimalWage = (peopleWithMinimalWage / (peopleWithMinimalWage + peopleWithoutMinimalWage)) * 100;
+			  	percentPeopleWithMinimalWage = percentPeopleWithMinimalWage.toFixed(2);
+			  	if (peopleWithMinimalWage === 1 && peopleWithoutMinimalWage === 0) {
+			  		percentPeopleWithMinimalWage = 0;
+			  	}
 			  	averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
+			  	averageSalaryWithAdmin = averageSalaryWithAdmin.toFixed(2);
 			  	averageSalaryWithoutAdmin = sumOfSalaryWithoutAdmin / countWithoutAdmin;
+			  	averageSalaryWithoutAdmin = averageSalaryWithoutAdmin.toFixed(2);
 			  	if (sumOfSalaryWithoutAdmin === 0 || sumOfSalaryWithoutAdmin === NaN) {
 			  		averageSalaryWithoutAdmin = 'Нет персонала';
 			  	}
@@ -99,6 +120,8 @@ app.get('/', function (req, res) { // если зашел на главную с
 			  	res.render('index.hbs', {
 					avgSalaryWithAdmin : averageSalaryWithAdmin,
 					avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
+					peopleWithMinimalWage: peopleWithMinimalWage,
+					percentPeopleWithMinimalWage: percentPeopleWithMinimalWage,
 					options: options
 				});
 			})
@@ -135,6 +158,10 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 	let sumOfSalaryWithoutAdmin = 0;
 	let averageSalaryWithoutAdmin = 0;
 	let countWithoutAdmin = 0;
+	let minimalWage = 12792;
+	let peopleWithMinimalWage = 0;
+	let peopleWithoutMinimalWage = 0;
+	let percentPeopleWithMinimalWage = 0;
 		//console.log(req.body);
 		if (req.body.typeClient === 'login') { //проверка на тип пользователя логинится он или регистрируется
 			let hashedPassword = passwordHash.generate(req.body.password);
@@ -207,6 +234,11 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 							  				sumOfSalaryWithoutAdmin = results[0].SALARY;
 							  				countWithoutAdmin = 1;
 							  			}
+							  			if (results[0].SALARY >= minimalWage) {
+							  				peopleWithMinimalWage = 1;
+							  			} else {
+							  				peopleWithoutMinimalWage = 1;
+							  			}
 							  		} else {
 								  		for (let i = 0; i < results.length; i += 1) {
 								  			institutions.push(results[i].INSTITUTION);
@@ -215,6 +247,11 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 								  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
 								  				countWithoutAdmin += 1;
 								  			}
+								  			if (results[i].SALARY >= minimalWage) {
+								  				peopleWithMinimalWage += 1;
+								  			} else {
+								  				peopleWithoutMinimalWage += 1;
+								  			}
 								  		}
 								  		uniqueInstitutions = [...new Set(institutions)];
 								  		for (let j = 0; j < uniqueInstitutions.length; j += 1) {
@@ -222,8 +259,15 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 								  		}
 							  		}
 							  	}
+							  	percentPeopleWithMinimalWage = (peopleWithMinimalWage / (peopleWithMinimalWage + peopleWithoutMinimalWage)) * 100;
+							  	percentPeopleWithMinimalWage = percentPeopleWithMinimalWage.toFixed(2);
+							  	if (peopleWithMinimalWage === 1 && peopleWithoutMinimalWage === 0) {
+							  		percentPeopleWithMinimalWage = 0;
+							  	}
 							  	averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
+							  	averageSalaryWithAdmin = averageSalaryWithAdmin.toFixed(2);
 							  	averageSalaryWithoutAdmin = sumOfSalaryWithoutAdmin / countWithoutAdmin;
+							  	averageSalaryWithoutAdmin = averageSalaryWithoutAdmin.toFixed(2);
 							  	if (sumOfSalaryWithoutAdmin === 0 || sumOfSalaryWithoutAdmin === NaN) {
 							  		averageSalaryWithoutAdmin = 'Нет персонала';
 							  	}
@@ -234,6 +278,8 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 							  		successClient: `${client[0]} ${client[1]}`,
 									avgSalaryWithAdmin : averageSalaryWithAdmin,
 									avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
+									peopleWithMinimalWage: peopleWithMinimalWage,
+									percentPeopleWithMinimalWage: percentPeopleWithMinimalWage,
 									options: options
 								});
 							})
@@ -275,6 +321,10 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			let options = [];
 			let institutions = [];
 			let hashedPassword = passwordHash.generate(req.body.password);
+			let minimalWage = 12792;
+			let peopleWithMinimalWage = 0;
+			let peopleWithoutMinimalWage = 0;
+			let percentPeopleWithMinimalWage = 0;
 			//console.log(hashedPassword.length);
 			let client = [req.body.name, req.body.surname, hashedPassword, req.body.salary, req.body.institution, req.body.isAdminCheckBox] //парсинг данных из форм
 			const connection = mysql.createConnection({//соединение с БД
@@ -321,12 +371,17 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 							  	} else {
 							  		//console.log(results);
 							  		if (results.length === 1) {
-						  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
-						  			sumOfSalaryWithAdmin = results[0].SALARY;
-						  			if (results[0].isAdmin === '0') {
-						  				sumOfSalaryWithoutAdmin = results[0].SALARY;
-						  				countWithoutAdmin = 1;
-						  			}
+							  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
+							  			sumOfSalaryWithAdmin = results[0].SALARY;
+							  			if (results[0].isAdmin === '0') {
+							  				sumOfSalaryWithoutAdmin = results[0].SALARY;
+							  				countWithoutAdmin = 1;
+							  			}
+							  			if (results[0].SALARY >= minimalWage) {
+							  				peopleWithMinimalWage = 1;
+							  			} else {
+							  				peopleWithoutMinimalWage = 1;
+							  			}
 							  		} else {
 								  		for (let i = 0; i < results.length; i += 1) {
 								  			institutions.push(results[i].INSTITUTION);
@@ -335,6 +390,11 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 								  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
 								  				countWithoutAdmin += 1;
 								  			}
+								  			if (results[i].SALARY >= minimalWage) {
+								  				peopleWithMinimalWage += 1;
+								  			} else {
+								  				peopleWithoutMinimalWage += 1;
+								  			}
 								  		}
 								  		uniqueInstitutions = [...new Set(institutions)];
 								  		for (let j = 0; j < uniqueInstitutions.length; j += 1) {
@@ -342,8 +402,15 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 								  		}
 							  		}
 							  	}
+							  	percentPeopleWithMinimalWage = (peopleWithMinimalWage / (peopleWithMinimalWage + peopleWithoutMinimalWage)) * 100;
+							  	percentPeopleWithMinimalWage = percentPeopleWithMinimalWage.toFixed(2);
+							  	if (peopleWithMinimalWage === 1 && peopleWithoutMinimalWage === 0) {
+							  		percentPeopleWithMinimalWage = 0;
+							  	}
 							  	averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
+							  	averageSalaryWithAdmin = averageSalaryWithAdmin.toFixed(2);
 							  	averageSalaryWithoutAdmin = sumOfSalaryWithoutAdmin / countWithoutAdmin;
+							  	averageSalaryWithoutAdmin = averageSalaryWithoutAdmin.toFixed(2);
 							  	if (sumOfSalaryWithoutAdmin === 0 || sumOfSalaryWithoutAdmin === NaN) {
 							  		averageSalaryWithoutAdmin = 'Нет персонала';
 							  	}
@@ -354,6 +421,8 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 							  		successClient: `${client[0]} ${client[1]}`,
 									avgSalaryWithAdmin : averageSalaryWithAdmin,
 									avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
+									peopleWithMinimalWage: peopleWithMinimalWage,
+									percentPeopleWithMinimalWage: percentPeopleWithMinimalWage,
 									options: options
 								});
 							})
@@ -449,14 +518,16 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 	
 })
 
-/*app.use('/', urlencodedParser, function (req, res) {
-	res.render('index.hbs', {
-		//avgSalary : allSalary,
-		//options: options
-		});
-	});*/
-
 app.post('/avgSalaryInstitution', urlencodedParser, (req, res) => {
+	let minimalWage = 12792;
+	let peopleWithMinimalWage = 0;
+	let peopleWithoutMinimalWage = 0;
+	let percentPeopleWithMinimalWage = 0;
+	let sumOfSalaryWithAdmin = 0;
+	let averageSalaryWithAdmin = 0;
+	let sumOfSalaryWithoutAdmin = 0;
+	let averageSalaryWithoutAdmin = 0;
+	let countWithoutAdmin = 0;
 
 	const connection = mysql.createConnection({//соединение с БД
 		host: "localhost", //хост
@@ -483,15 +554,52 @@ app.post('/avgSalaryInstitution', urlencodedParser, (req, res) => {
 			let sumOfSalaryInstitution = 0;
 			if (results.length === 1) {
 				sumOfSalaryInstitution = results[0].SALARY;
+				sumOfSalaryWithAdmin = results[0].SALARY;
+			  	if (results[0].isAdmin === '0') {
+			  		sumOfSalaryWithoutAdmin = results[0].SALARY;
+			  		countWithoutAdmin = 1;
+			  	}
+			  	if (results[0].SALARY >= minimalWage) {
+			  		peopleWithMinimalWage = 1;
+			  	} else {
+			  		peopleWithoutMinimalWage = 1;
+			  	}
 			} else {
 				for (let i = 0; i < results.length; i++) {
-					sumOfSalaryInstitution += results[i].SALARY; 
+					sumOfSalaryInstitution += results[i].SALARY;
+					if (results[i].isAdmin === '0') {
+				  		sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
+				  		countWithoutAdmin += 1;
+				  	}
+				  	if (results[i].SALARY >= minimalWage) {
+				  		peopleWithMinimalWage += 1;
+				  	} else {
+				  		peopleWithoutMinimalWage += 1;
+				  	}
 				}
 			}
 			averageSalaryInstitution = sumOfSalaryInstitution / results.length;
+			percentPeopleWithMinimalWage = (peopleWithMinimalWage / (peopleWithMinimalWage + peopleWithoutMinimalWage)) * 100;
+			percentPeopleWithMinimalWage = percentPeopleWithMinimalWage.toFixed(2);
+			if (peopleWithMinimalWage === 1 && peopleWithoutMinimalWage === 0) {
+				percentPeopleWithMinimalWage = 0;
+			}
+			averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
+			averageSalaryWithAdmin = averageSalaryWithAdmin.toFixed(2);
+			averageSalaryWithoutAdmin = sumOfSalaryWithoutAdmin / countWithoutAdmin;
+			averageSalaryWithoutAdmin = averageSalaryWithoutAdmin.toFixed(2);
+			if (sumOfSalaryWithoutAdmin === 0 || sumOfSalaryWithoutAdmin === NaN) {
+				averageSalaryWithoutAdmin = 'Нет персонала';
+			}
+			if (sumOfSalaryWithAdmin === 0 || sumOfSalaryWithAdmin === NaN) {
+				averageSalaryWithAdmin = 'Нет персонала';
+			}
 			res.render('avgSalaryInstitution.hbs', {
 				institution: req.body.institutionSelector,
-				avgSalaryInsitution: averageSalaryInstitution
+				avgSalaryInsitution: averageSalaryInstitution,
+				avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
+				peopleWithMinimalWage: peopleWithMinimalWage,
+				percentPeopleWithMinimalWage: percentPeopleWithMinimalWage
 			})
 		}
 	});
