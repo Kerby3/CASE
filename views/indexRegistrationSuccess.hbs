@@ -11,7 +11,9 @@
 	<p class="client">Welcome, {{successClient}}!</p>
 	<p>Средняя зарплата с учетом административно-управленческого персонала: {{avgSalaryWithAdmin}}</p>
 	<p>Средняя зарплата без учета административно-управленческого персонала: {{avgSalaryWithoutAdmin}}</p>
-	<p>Количество человек получающих зарплату согласно МРОТ: {{peopleWithMinimalWage}}, это {{percentPeopleWithMinimalWage}}% от всего количества человек, получающих зарплату</p>	
+	<p>Количество человек получающих зарплату согласно МРОТ: {{peopleWithMinimalWage}}, это {{percentPeopleWithMinimalWage}}% от всего количества человек, получающих зарплату</p>
+	<p>Средние компенсационные выплаты: {{averageCompensationPayments}}</p>
+	<p>Средние стимулирующие выплаты: {{averageIncentivePayments}}</p>
 	<p>Вы можете посмотреть среднюю зарплату в определенной организации, выбрав ее ниже</p>
 	<form action="/avgSalaryInstitution" method="post">
 		<select name="institutionSelector" class="institutionSelect">
@@ -19,5 +21,7 @@
 		</select>
 		<input type="submit" value="Посмотреть" class="avgSalaryInstitutionButton">
 	</form>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+	<script src="datePicker.js"></script>
 </body>
 </html>

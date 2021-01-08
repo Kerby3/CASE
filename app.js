@@ -48,6 +48,10 @@ app.get('/', function (req, res) { // если зашел на главную с
 	let peopleWithMinimalWage = 0;
 	let peopleWithoutMinimalWage = 0;
 	let percentPeopleWithMinimalWage = 0;
+	let averageCompensationPayments = 0;
+	let averageIncentivePayments = 0;
+	let sumOfCompensationPayments = 0;
+	let sumOfIncentivePayments = 0;
 	const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
 			  user: "root",//пользователь
@@ -72,6 +76,8 @@ app.get('/', function (req, res) { // если зашел на главную с
 			  		if (results.length === 1) {
 			  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
 			  			sumOfSalaryWithAdmin = results[0].SALARY;
+			  			sumOfCompensationPayments = results[0].compensationPayments;
+						sumOfIncentivePayments = results[0].incentivePayments;
 			  			if (results[0].isAdmin === '0') {
 			  				sumOfSalaryWithoutAdmin = results[0].SALARY;
 			  				countWithoutAdmin = 1;
@@ -85,6 +91,9 @@ app.get('/', function (req, res) { // если зашел на главную с
 				  		for (let i = 0; i < results.length; i += 1) {
 				  			institutions.push(results[i].INSTITUTION);
 				  			sumOfSalaryWithAdmin += parseInt(results[i].SALARY);
+				  			//console.log(`results[i].compensationPayments: ${results[i].compensationPayments} \nresults[i].incentivePayments: ${results[i].incentivePayments}`)
+				  			sumOfCompensationPayments += parseInt(results[i].compensationPayments);
+							sumOfIncentivePayments += parseInt(results[i].incentivePayments);
 				  			if (results[i].isAdmin === '0') {
 				  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
 				  				countWithoutAdmin += 1;
@@ -102,9 +111,16 @@ app.get('/', function (req, res) { // если зашел на главную с
 			  		}
 			  	}
 			  	//console.log(options);
-			  	percentPeopleWithMinimalWage = (peopleWithMinimalWage / (peopleWithMinimalWage + peopleWithoutMinimalWage)) * 100;
+			  	averageCompensationPayments = sumOfCompensationPayments / results.length;
+				averageIncentivePayments = sumOfIncentivePayments / results.length;
+				if (results.length === 0) {
+					averageCompensationPayments = 0;
+					averageIncentivePayments = 0;
+				}
+				//console.log(`sumOfCompensationPayments: ${sumOfCompensationPayments} \nsumOfIncentivePayments: ${sumOfIncentivePayments} \naverageCompensationPayments: ${averageCompensationPayments} \naverageIncentivePayments: ${averageIncentivePayments} \nresults.length: ${results.length}`);
+			  	percentPeopleWithMinimalWage = (peopleWithMinimalWage / results.length) * 100;
 			  	percentPeopleWithMinimalWage = percentPeopleWithMinimalWage.toFixed(2);
-			  	if (peopleWithMinimalWage === 1 && peopleWithoutMinimalWage === 0) {
+			  	if (peopleWithMinimalWage === 0 && peopleWithoutMinimalWage === 0) {
 			  		percentPeopleWithMinimalWage = 0;
 			  	}
 			  	averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
@@ -122,6 +138,8 @@ app.get('/', function (req, res) { // если зашел на главную с
 					avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
 					peopleWithMinimalWage: peopleWithMinimalWage,
 					percentPeopleWithMinimalWage: percentPeopleWithMinimalWage,
+					averageCompensationPayments: averageCompensationPayments,
+					averageIncentivePayments: averageIncentivePayments,
 					options: options
 				});
 			})
@@ -168,6 +186,10 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			let client = [req.body.name, req.body.surname];
 			let options = '';
 			let institutions = [];
+			let averageCompensationPayments = 0;
+			let averageIncentivePayments = 0;
+			let sumOfCompensationPayments = 0;
+			let sumOfIncentivePayments = 0;
 			const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
 			  user: "root",//пользователь
@@ -230,6 +252,8 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 							  		if (results.length === 1) {
 							  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
 							  			sumOfSalaryWithAdmin = results[0].SALARY;
+							  			sumOfCompensationPayments = results[0].compensationPayments;
+							  			sumOfIncentivePayments = results[0].incentivePayments;
 							  			if (results[0].isAdmin === '0') {
 							  				sumOfSalaryWithoutAdmin = results[0].SALARY;
 							  				countWithoutAdmin = 1;
@@ -243,6 +267,8 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 								  		for (let i = 0; i < results.length; i += 1) {
 								  			institutions.push(results[i].INSTITUTION);
 								  			sumOfSalaryWithAdmin += parseInt(results[i].SALARY);
+								  			sumOfCompensationPayments += parseInt(results[i].compensationPayments);
+							  				sumOfIncentivePayments += parseInt(results[i].incentivePayments);
 								  			if (results[i].isAdmin === '0') {
 								  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
 								  				countWithoutAdmin += 1;
@@ -259,9 +285,16 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 								  		}
 							  		}
 							  	}
-							  	percentPeopleWithMinimalWage = (peopleWithMinimalWage / (peopleWithMinimalWage + peopleWithoutMinimalWage)) * 100;
+							  	averageCompensationPayments = sumOfCompensationPayments / results.length;
+							  	averageIncentivePayments = sumOfIncentivePayments / results.length;
+							  	if (results.length === 0) {
+							  		averageCompensationPayments = 0;
+							  		averageIncentivePayments = 0;
+							  	}
+
+							  	percentPeopleWithMinimalWage = (peopleWithMinimalWage / results.length) * 100;
 							  	percentPeopleWithMinimalWage = percentPeopleWithMinimalWage.toFixed(2);
-							  	if (peopleWithMinimalWage === 1 && peopleWithoutMinimalWage === 0) {
+							  	if (peopleWithMinimalWage === 0 && peopleWithoutMinimalWage === 0) {
 							  		percentPeopleWithMinimalWage = 0;
 							  	}
 							  	averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
@@ -280,6 +313,8 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 									avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
 									peopleWithMinimalWage: peopleWithMinimalWage,
 									percentPeopleWithMinimalWage: percentPeopleWithMinimalWage,
+									averageCompensationPayments: averageCompensationPayments,
+									averageIncentivePayments: averageIncentivePayments,
 									options: options
 								});
 							})
@@ -325,8 +360,12 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			let peopleWithMinimalWage = 0;
 			let peopleWithoutMinimalWage = 0;
 			let percentPeopleWithMinimalWage = 0;
+			let averageCompensationPayments = 0;
+			let averageIncentivePayments = 0;
+			let sumOfCompensationPayments = 0;
+			let sumOfIncentivePayments = 0;
 			//console.log(hashedPassword.length);
-			let client = [req.body.name, req.body.surname, hashedPassword, req.body.salary, req.body.institution, req.body.isAdminCheckBox] //парсинг данных из форм
+			let client = [req.body.name, req.body.surname, hashedPassword, req.body.salary, req.body.institution, req.body.isAdminCheckBox, req.body.compensationPayments, req.body.incentivePayments] //парсинг данных из форм
 			const connection = mysql.createConnection({//соединение с БД
 			  host: "localhost", //хост
 			  user: "root",//пользователь
@@ -343,7 +382,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			      console.log("Подключение к серверу MySQL успешно установлено");//вывод успешного подключения к БД
 			    }
 			 });
-			  connection.execute("INSERT INTO clients (FIRST_NAME, SURNAME, PASSWORD_FIELD, SALARY, INSTITUTION, isAdmin) VALUES (?, ?, ?, ?, ?, ?)",client, function (err, results) { //выполнение SQL запроса на добавление клиента при регистрации
+			  connection.execute("INSERT INTO clients (FIRST_NAME, SURNAME, PASSWORD_FIELD, SALARY, INSTITUTION, isAdmin, compensationPayments, incentivePayments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",client, function (err, results) { //выполнение SQL запроса на добавление клиента при регистрации
 			  	if (err) {//проверка на ошибку
 			  		console.log(err);//вывод ошибки
 			  	} else {
@@ -373,6 +412,8 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 							  		if (results.length === 1) {
 							  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
 							  			sumOfSalaryWithAdmin = results[0].SALARY;
+							  			sumOfCompensationPayments = results[0].compensationPayments;
+							  			sumOfIncentivePayments = results[0].incentivePayments;
 							  			if (results[0].isAdmin === '0') {
 							  				sumOfSalaryWithoutAdmin = results[0].SALARY;
 							  				countWithoutAdmin = 1;
@@ -386,6 +427,8 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 								  		for (let i = 0; i < results.length; i += 1) {
 								  			institutions.push(results[i].INSTITUTION);
 								  			sumOfSalaryWithAdmin += parseInt(results[i].SALARY);
+								  			sumOfCompensationPayments += parseInt(results[i].compensationPayments);
+							  				sumOfIncentivePayments += parseInt(results[i].incentivePayments);
 								  			if (results[i].isAdmin === '0') {
 								  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
 								  				countWithoutAdmin += 1;
@@ -402,9 +445,15 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 								  		}
 							  		}
 							  	}
-							  	percentPeopleWithMinimalWage = (peopleWithMinimalWage / (peopleWithMinimalWage + peopleWithoutMinimalWage)) * 100;
+							  	averageCompensationPayments = sumOfCompensationPayments / results.length;
+							  	averageIncentivePayments = sumOfIncentivePayments / results.length;
+							  	if (results.length === 0) {
+							  		averageCompensationPayments = 0;
+							  		averageIncentivePayments = 0;
+							  	}
+							  	percentPeopleWithMinimalWage = (peopleWithMinimalWage / results.length) * 100;
 							  	percentPeopleWithMinimalWage = percentPeopleWithMinimalWage.toFixed(2);
-							  	if (peopleWithMinimalWage === 1 && peopleWithoutMinimalWage === 0) {
+							  	if (peopleWithMinimalWage === 0 && peopleWithoutMinimalWage === 0) {
 							  		percentPeopleWithMinimalWage = 0;
 							  	}
 							  	averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
@@ -423,6 +472,8 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 									avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
 									peopleWithMinimalWage: peopleWithMinimalWage,
 									percentPeopleWithMinimalWage: percentPeopleWithMinimalWage,
+									averageCompensationPayments: averageCompensationPayments,
+									averageIncentivePayments: averageIncentivePayments,
 									options: options
 								});
 							})
@@ -453,6 +504,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			let sumOfSalaryInstitution = 0;
 			let sumOfSalaryInstitutions = [];
 			let averageSalaryInstitution = [];
+			console.log(req.body);
 			const connection = mysql.createConnection({//соединение с БД
 					  host: "localhost", //хост
 					  user: "root",//пользователь
@@ -528,7 +580,10 @@ app.post('/avgSalaryInstitution', urlencodedParser, (req, res) => {
 	let sumOfSalaryWithoutAdmin = 0;
 	let averageSalaryWithoutAdmin = 0;
 	let countWithoutAdmin = 0;
-
+	let averageCompensationPayments = 0;
+	let averageIncentivePayments = 0;
+	let sumOfCompensationPayments = 0;
+	let sumOfIncentivePayments = 0;
 	const connection = mysql.createConnection({//соединение с БД
 		host: "localhost", //хост
 		user: "root",//пользователь
@@ -555,6 +610,8 @@ app.post('/avgSalaryInstitution', urlencodedParser, (req, res) => {
 			if (results.length === 1) {
 				sumOfSalaryInstitution = results[0].SALARY;
 				sumOfSalaryWithAdmin = results[0].SALARY;
+				sumOfCompensationPayments = results[0].compensationPayments;
+				sumOfIncentivePayments = results[0].incentivePayments;
 			  	if (results[0].isAdmin === '0') {
 			  		sumOfSalaryWithoutAdmin = results[0].SALARY;
 			  		countWithoutAdmin = 1;
@@ -567,6 +624,8 @@ app.post('/avgSalaryInstitution', urlencodedParser, (req, res) => {
 			} else {
 				for (let i = 0; i < results.length; i++) {
 					sumOfSalaryInstitution += results[i].SALARY;
+					sumOfCompensationPayments += parseInt(results[i].compensationPayments);
+					sumOfIncentivePayments += parseInt(results[i].incentivePayments);
 					if (results[i].isAdmin === '0') {
 				  		sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
 				  		countWithoutAdmin += 1;
@@ -578,10 +637,20 @@ app.post('/avgSalaryInstitution', urlencodedParser, (req, res) => {
 				  	}
 				}
 			}
+			averageCompensationPayments = sumOfCompensationPayments / results.length;
+			averageIncentivePayments = sumOfIncentivePayments / results.length;
+			if (results.length === 0) {
+				averageCompensationPayments = 0;
+				averageIncentivePayments = 0;
+			}
+
 			averageSalaryInstitution = sumOfSalaryInstitution / results.length;
-			percentPeopleWithMinimalWage = (peopleWithMinimalWage / (peopleWithMinimalWage + peopleWithoutMinimalWage)) * 100;
+			if (results.length === 0) {
+				averageSalaryInstitution = 'Нет Персонала';
+			}
+			percentPeopleWithMinimalWage = (peopleWithMinimalWage / results.length) * 100;
 			percentPeopleWithMinimalWage = percentPeopleWithMinimalWage.toFixed(2);
-			if (peopleWithMinimalWage === 1 && peopleWithoutMinimalWage === 0) {
+			if (peopleWithMinimalWage === 0 && peopleWithoutMinimalWage === 0) {
 				percentPeopleWithMinimalWage = 0;
 			}
 			averageSalaryWithAdmin = sumOfSalaryWithAdmin / results.length;
@@ -599,7 +668,9 @@ app.post('/avgSalaryInstitution', urlencodedParser, (req, res) => {
 				avgSalaryInsitution: averageSalaryInstitution,
 				avgSalaryWithoutAdmin: averageSalaryWithoutAdmin,
 				peopleWithMinimalWage: peopleWithMinimalWage,
-				percentPeopleWithMinimalWage: percentPeopleWithMinimalWage
+				percentPeopleWithMinimalWage: percentPeopleWithMinimalWage,
+				averageCompensationPayments: averageCompensationPayments,
+				averageIncentivePayments: averageIncentivePayments
 			})
 		}
 	});
