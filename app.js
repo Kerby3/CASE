@@ -14,26 +14,7 @@ app.use(express.static(__dirname + '/public'));
 
 const PORT = 3306;// выбор порта для сервера
 
-let artists = [
-{
-	id: 1,
-	name: 'Green Day'
-},
-{
-	id: 2,
-	name: '30 seconds to Mars'
-},
-{
-	id: 3,
-	name: 'TOP'
-}
-];
 
-app.use('/qwa', (req, res) => {
-	res.render('indexRegistrationSuccess.hbs', {
-		successClient: 'aaa'
-	});
-}); 
 
 app.get('/', function (req, res) { // если зашел на главную страницу по ссылке
 	let sumOfSalaryWithAdmin = 0;
@@ -493,80 +474,7 @@ app.post('/', urlencodedParser, function (req, res) { //если нажал на
 			  }
 			  console.log("Подключение закрыто");
 			});
-		} else if (req.body.typeClient !== 'register' && req.body.typeClient !== 'login') {
-			let institutions = [];
-			let options = '';
-			let sumOfSalaryWithAdmin = 0;
-			let averageSalaryWithAdmin = 0;
-			let sumOfSalaryWithoutAdmin = 0;
-			let averageSalaryWithoutAdmin = 0;
-			let countWithoutAdmin = 0;
-			let sumOfSalaryInstitution = 0;
-			let sumOfSalaryInstitutions = [];
-			let averageSalaryInstitution = [];
-			console.log(req.body);
-			const connection = mysql.createConnection({//соединение с БД
-					  host: "localhost", //хост
-					  user: "root",//пользователь
-					  database: "clients",//название БД
-					  password: "qwerty",//пароль к БД
-					  port: 3307//порт к БД
-					});
-					// тестирование подключения
-					  connection.connect(function(err){//соединение с БД
-					    if (err) {//проверка на ошибку
-					      return console.error("Ошибка: " + err.message);//вывод ошибки
-					    }
-					    else{
-					      console.log("Подключение к серверу MySQL успешно установлено");//вывод успешного подключения к БД
-					    }
-					 });
-
-					  connection.execute('SELECT * FROM clients', function (err, results) { //выполнение SQL запроса на поиск клиента
-					  	if (err) {//проверка на ошибку
-					  		console.log(err);//вывод ошибки
-					  	} else {
-					  		//console.log(results);
-
-
-
-						  		if (results.length === 1) {
-						  			options += `<option value="${results[0].INSTITUTION}">${results[0].INSTITUTION}</option>`;
-						  			sumOfSalaryWithAdmin = results[0].SALARY;
-						  			if (results[0].isAdmin === '0') {
-						  				sumOfSalaryWithoutAdmin = results[0].SALARY;
-						  				countWithoutAdmin = 1;
-						  			}
-						  		} else {
-							  		for (let i = 0; i < results.length; i += 1) {
-							  			institutions.push(results[i].INSTITUTION);
-							  			sumOfSalaryWithAdmin += parseInt(results[i].SALARY);
-							  			if (results[i].isAdmin === '0') {
-							  				sumOfSalaryWithoutAdmin += parseInt(results[i].SALARY);
-							  				countWithoutAdmin += 1;
-							  			}
-							  		}
-							  		uniqueInstitutions = [...new Set(institutions)];
-							  		for (let j = 0; j < uniqueInstitutions.length; j += 1) {
-							  			options += `<option value=${uniqueInstitutions[j]}>${uniqueInstitutions[j]}</option>\n`
-							  		}
-						  		}
-						  	}
-
-
-
-
-					  	
-					  	//console.log(options);
-						//console.log(req.body);
-					})
-					  	connection.end(function(err) {
-						if (err) {
-						  return console.log("Ошибка: " + err.message);
-						}
-						console.log("Подключение закрыто");
-					});
-			}
+		} 
 	
 })
 
@@ -682,44 +590,6 @@ app.post('/avgSalaryInstitution', urlencodedParser, (req, res) => {
 
 	});
 });
-
-/*app.use('avgSalaryInstitution', (req, res) => {
-	res.render('avgSalaryInstitution.hbs', {
-
-	})
-})
-
-app.get('/artists', function (req, res) {
-	res.send(artists);
-})*/
-
-/*app.post('/monitoring', urlencodedParser, (req, res) => {
-	res.render('monitor.hbs', {
-		avgSalary: `${req.body.avgSalary}`
-	})
-	console.log(req.body);
-})*/
-
-/*app.use('/enteringData', (req, res) => {
-	res.render('enterData.hbs', {
-		
-	});
-});
-
-app.get('/regSuccess', (req, res) => {
-	res.render('indexRegistrationSuccess.hbs', {
-
-	});
-
-})*/
-
-app.get('/artists/:id', function (req, res) {
-	console.log(req.params);
-	let artist = artists.find(function (artist) {
-		return artist.id === Number(req.params.id);
-	});
-	res.send(artist);
-})
 
 app.listen(PORT, function () {
 	console.log('API app started');
